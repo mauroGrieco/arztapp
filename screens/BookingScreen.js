@@ -1,5 +1,7 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppointmentContext } from '../context/AppointmentContext';
 
 function BookingScreen({ navigation }) {
@@ -7,9 +9,10 @@ function BookingScreen({ navigation }) {
     const [description, setDescription] = useState('');
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
+    const [image, setImage] = useState(null);
     const { addAppointment } = useContext(AppointmentContext);
 
-    const handleBooking = () => {
+    const handleBooking = async () => {
         const newAppointment = {
             id: (Math.random() * 10000).toString(),
             type: 'Termin',
@@ -17,9 +20,25 @@ function BookingScreen({ navigation }) {
             patient: 'Neuer Patient',
             priority: 'Mittel',
             date: new Date().toLocaleString(),
+            image: image,
         };
+
+        await AsyncStorage.setItem(newAppointment.id, JSON.stringify(newAppointment));
         addAppointment(newAppointment);
         navigation.navigate('Home');
+    };
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.cancelled) {
+            setImage(result.uri);
+        }
     };
 
     return (
@@ -49,6 +68,10 @@ function BookingScreen({ navigation }) {
                 value={message}
                 onChangeText={setMessage}
             />
+            <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
+                <Text style={styles.buttonText}>Bild auswählen</Text>
+            </TouchableOpacity>
+            {image && <Image source={{ uri: image }} style={styles.image} />}
             <TouchableOpacity style={styles.button} onPress={handleBooking}>
                 <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
@@ -79,6 +102,20 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
+    },
+    imageButton: {
+        backgroundColor: '#555',
+        padding: 15,
+        borderRadius: 5,
+        marginTop: 20,
+        width: '100%',
+        alignItems: 'center',
+    },
+    image: {
+        width: 200,
+        height: 200,
+        marginTop: 20,
+        borderRadius: 10,
     },
     button: {
         backgroundColor: '#000',

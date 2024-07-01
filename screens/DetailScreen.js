@@ -1,8 +1,27 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function DetailScreen({ route, navigation }) {
-    const { appointment } = route.params;
+    const { appointmentId } = route.params;
+    const [appointment, setAppointment] = useState(null);
+
+    useEffect(() => {
+        const loadAppointment = async () => {
+            const storedAppointment = await AsyncStorage.getItem(appointmentId);
+            setAppointment(JSON.parse(storedAppointment));
+        };
+
+        loadAppointment();
+    }, [appointmentId]);
+
+    if (!appointment) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.title}>Lade Daten...</Text>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -13,6 +32,10 @@ function DetailScreen({ route, navigation }) {
                 <Text style={styles.detailText}>Patient: {appointment.patient}</Text>
                 <Text style={styles.detailText}>Priorität: {appointment.priority}</Text>
                 <Text style={styles.detailText}>Datum/Zeit: {appointment.date}</Text>
+                {alert(appointment.image)}
+                {appointment.image && (
+                    <Image source={{ uri: appointment.image }} style={styles.image} />
+                )}
             </View>
             <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
                 <Text style={styles.buttonText}>Zurück</Text>
@@ -46,6 +69,12 @@ const styles = StyleSheet.create({
     detailText: {
         fontSize: 16,
         marginBottom: 10,
+    },
+    image: {
+        width: '100%',
+        height: 200,
+        marginTop: 20,
+        borderRadius: 10,
     },
     button: {
         backgroundColor: '#007bff',

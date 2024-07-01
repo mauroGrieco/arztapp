@@ -6,7 +6,7 @@ function OverviewScreen({ navigation }) {
     const { appointments } = useContext(AppointmentContext);
 
     const renderItem = ({ item }) => (
-        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Detail', { appointment: item })}>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Detail', { appointmentId: item.id })}>
             <Text style={styles.cardText}>{item.issue} am {item.date}</Text>
         </TouchableOpacity>
     );
